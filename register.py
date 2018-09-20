@@ -154,6 +154,7 @@ def register(driver):
         firstName.send_keys(reginfo['firstName'])
         user_name = driver.find_element_by_id("username")
         reginfo['username'] = getRandomString()
+        reginfo['email'] = getRandomString() + '@gmail.com'
         user_name.clear()
         user_name.send_keys(reginfo['username'])
         passwd = driver.find_element_by_name("Passwd")

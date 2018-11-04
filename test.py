@@ -17,7 +17,7 @@ def txt_wrap_by(start_str, end, html):
 
 # 方法主入口
 if __name__ == '__main__':
-    mobiles = ['18443585469']
+    mobiles = ['17160652713']
 
     header_dict = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'}

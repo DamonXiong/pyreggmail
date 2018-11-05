@@ -3,6 +3,7 @@
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.common.exceptions import NoSuchElementException, ElementNotVisibleException
+from selenium.webdriver.support.select import Select
 import time
 import threading
 import random
@@ -11,126 +12,18 @@ from urllib import parse, request
 import re
 import json
 import datetime
+from datetime import timedelta, date
 
-reginfo = {
-}
-token = ""
-phoneNumber = ""
-smsCode = ""
-ITEMID = '147'  # 项目编号
-isRelese = True
 isChrome = True
-
-header_dict = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'}
-
-
-def getRandomString():
-    return ''.join(random.sample(string.ascii_letters + string.digits, 8))
-
-
-def smsLogin():
-    global token
-
-    # 登陆/获取TOKEN
-    username = 'damonxiong'  # 账号
-    password = 'xxq890404'  # 密码
-    url = 'http://api.fxhyd.cn/UserInterface.aspx?action=login&username=' + \
-        username+'&password='+password
-    TOKEN1 = request.urlopen(request.Request(
-        url=url, headers=header_dict)).read().decode(encoding='utf-8')
-    if TOKEN1.split('|')[0] == 'success':
-        TOKEN = TOKEN1.split('|')[1]
-        print('TOKEN是'+TOKEN)
-        token = TOKEN
-        return True
-    else:
-        print('获取TOKEN错误,错误代码'+TOEKN1+'。代码释义：1001:参数token不能为空;1002:参数action不能为空;1003:参数action错误;1004:token失效;1005:用户名或密码错误;1006:用户名不能为空;1007:密码不能为空;1008:账户余额不足;1009:账户被禁用;1010:参数错误;1011:账户待审核;1012:登录数达到上限')
-        return False
-
-
-def getPhNumber():
-    if token.strip():
-        global phoneNumber, isRelese
-        EXCLUDENO = ''  # 排除号段170_171
-        url = 'http://api.fxhyd.cn/UserInterface.aspx?action=getmobile&token=' + \
-            token+'&itemid='+ITEMID+'&excludeno='+EXCLUDENO
-        MOBILE1 = request.urlopen(request.Request(
-            url=url, headers=header_dict)).read().decode(encoding='utf-8')
-        if MOBILE1.split('|')[0] == 'success':
-            MOBILE = MOBILE1.split('|')[1]
-            print('获取号码是:\n'+MOBILE)
-            phoneNumber = MOBILE
-            isRelese = False
-            return True
-        else:
-            print('获取TOKEN错误,错误代码'+MOBILE1)
-            return False
-    else:
-        print('获取手机号码失败，token为空重新获取')
-        smsLogin()
-        return False
-
-
-def txt_wrap_by(start_str, end, html):
-    start = html.find(start_str)
-    if start >= 0:
-        start += len(start_str)
-        end = html.find(end, start)
-        if end >= 0:
-            return html[start:end].strip()
-
-
-def getMsg():
-    if token.strip():
-        global smsCode
-        global isRelese
-        TOKEN = token  # TOKEN
-        MOBILE = phoneNumber  # 手机号码
-        WAIT = 100  # 接受短信时长60s
-        url = 'http://api.fxhyd.cn/UserInterface.aspx?action=getsms&token=' + \
-            TOKEN+'&itemid='+ITEMID+'&mobile='+MOBILE+'&release=1'
-        text1 = request.urlopen(request.Request(
-            url=url, headers=header_dict)).read().decode(encoding='utf-8')
-        TIME1 = time.time()
-        TIME2 = time.time()
-        ROUND = 1
-        while (TIME2-TIME1) < WAIT and not text1.split('|')[0] == "success":
-            time.sleep(5)
-            text1 = request.urlopen(request.Request(
-                url=url, headers=header_dict)).read().decode(encoding='utf-8')
-            TIME2 = time.time()
-            ROUND = ROUND+1
-
-        ROUND = str(ROUND)
-        if text1.split('|')[0] == "success":
-            text = text1.split('|')[1]
-            TIME = str(round(TIME2-TIME1, 1))
-            print('短信内容是'+text+'\n耗费时长'+TIME+'s,循环数是'+ROUND)
-            start = text.find('G-')
-            smsCode = text[(start+2):(start+8)]
-            isRelese = True
-            return True
-        else:
-            print('获取短信超时，错误代码是'+text1+',循环数是'+ROUND)
-            return False
-    else:
-        print('获取手机消息失败，token为空重新获取')
-        smsLogin()
-        return False
-
-
-def releaseNumber():
-    url = 'http://api.fxhyd.cn/UserInterface.aspx?action=release&token=' + \
-        token+'&itemid='+ITEMID+'&mobile='+phoneNumber
-
-    RELEASE = request.urlopen(request.Request(
-        url=url, headers=header_dict)).read().decode(encoding='utf-8')
-    if RELEASE == 'success':
-        print('号码成功释放:' + phoneNumber)
-        return True
-    print('号码释放失败：'+RELEASE)
-    return False
+startHour = 20
+startMin = 47
+userName = '2160652004'
+passWord = '270749'
+roomName = '研究间17'
+startTime = '800'
+endTime = '2200'
+bookDate = date.today()+timedelta(2)
+isSlectDate = False
 
 
 # 前台开启浏览器模式
@@ -149,122 +42,134 @@ def openEdge():
     driver = webdriver.Edge()
     return driver
 
+def goLogin(driver):
+    try:
+      username = driver.find_element_by_id("username")
+      password = driver.find_element_by_id("password")
+      username.send_keys(userName)
+      password.send_keys(passWord)
+      driver.find_element_by_class_name('btn-success').click()
+      return True
+    except Exception as e:
+      print(str(e))
+      return False
 
-def register(driver):
-    global reginfo, isRelese, isChrome
-    headingText = driver.find_element_by_id("headingText")
-    if headingText.text == "创建您的 Google 帐号":
-        # 找到输入框并输入查询内容
-        last_name = driver.find_element_by_id("lastName")
-        reginfo['lastName'] = getRandomString()
-        last_name.clear()
-        last_name.send_keys(reginfo['lastName'])
-        firstName = driver.find_element_by_id("firstName")
-        reginfo['firstName'] = getRandomString()
-        firstName.clear()
-        firstName.send_keys(reginfo['firstName'])
-        user_name = driver.find_element_by_id("username")
-        reginfo['username'] = getRandomString()
-        reginfo['email'] = reginfo['username'] + '@gmail.com'
-        user_name.clear()
-        user_name.send_keys(reginfo['username'])
-        passwd = driver.find_element_by_name("Passwd")
-        reginfo['password'] = getRandomString()
-        passwd.clear()
-        passwd.send_keys(reginfo['password'])
-        confirm_passwd = driver.find_element_by_name("ConfirmPasswd")
-        confirm_passwd.clear()
-        confirm_passwd.send_keys(reginfo['password'])
-        accountDetailsNext = driver.find_element_by_id("accountDetailsNext")
-        # 提交表单
-        accountDetailsNext.click()
-    elif headingText.text == "验证您的手机号码":
-        try:
-            code = driver.find_element_by_id("code")
-        except NoSuchElementException as e:
-            phoneNumberId = driver.find_element_by_id("phoneNumberId")
-            if not isRelese:
-                ret = releaseNumber()
-                if ret:
-                    isRelese = True
-                    # driver.quit()
-                    # openbrowser()
-                    # return
-                start_timer(driver)
-                return
-            ret = getPhNumber()
-            if not ret:
-                start_timer(driver)
-                return
-            phoneNumberId.clear()
-            reginfo['phoneNumber'] = phoneNumber
-            phoneNumberId.send_keys('+86 ' + phoneNumber)
-            gradsIdvPhoneNext = driver.find_element_by_id("gradsIdvPhoneNext")
-            gradsIdvPhoneNext.click()
+def goUserCenter(driver):
+  try:
+    confirmDlg = driver.find_element_by_id("uni_confirm")
+    if not confirmDlg.get_attribute("display") == "block":
+      return False
+    driver.find_element_by_class_name(
+        'ui-dialog-titlebar-close').click()
+    driver.find_element_by_id('user_center').click()
+    return True
+  except Exception as e:
+    print(str(e))
+    return False
+
+def goBookRoomSelection(driver):
+  try:
+    title = driver.find_element_by_class_name('h_title')
+    if title.text == 'Home Page':
+      driver.find_element_by_link_text('研究小间').click()
+      return True
+    else:
+      return False
+  except Exception as e:
+    print(str(e))
+    return False
+
+def changeTheDate(driver):
+  global roomName,isSlectDate
+  try:
+    datetitles = driver.find_elements_by_class_name('cld-h-cell')
+    isFindDateTitle = False
+    print(bookDate)
+    for i in range(len(datetitles)):
+      if datetitles[i].get_attribute('date') == str(bookDate):
+        isFindDateTitle = True
+        if datetitles[i].get_attribute('class').find('cld-d-sel') == -1:
+          datetitles[i].click()
         else:
-            ret = getMsg()
-            if not ret:
-                start_timer(driver)
-                return
-            code.send_keys(smsCode)
-            reginfo['smsCode'] = smsCode
-            gradsIdvVerifyNext = driver.find_element_by_id(
-                "gradsIdvVerifyNext")
-            gradsIdvVerifyNext.click()
-    elif headingText.text == "欢迎使用 Google":
-        year = driver.find_element_by_id('year')
-        year.send_keys('1988')
-        month = driver.find_element_by_id('month')
-        month.send_keys('1')
-        day = driver.find_element_by_id('day')
-        day.send_keys('1')
-        gender = driver.find_element_by_id('gender')
-        gender.send_keys('不愿透露')
-        personalDetailsNext = driver.find_element_by_id('personalDetailsNext')
-        personalDetailsNext.click()
-    elif headingText.text == "充分利用您的电话号码":
-        array = driver.find_elements_by_class_name('uBOgn')
-        for i in range(0, len(array)):
-            if array[i].text == '跳过':
-                array[i].click()
-    elif headingText.text == "隐私权及条款":
-        # 同意隐私条款后，记录账号信息，重新开启注册页面
-        try:
-            termsofserviceNext = driver.find_element_by_id(
-                'termsofserviceNext')
-        except ElementNotVisibleException as e:
-            driver.find_element_by_class_name('erm3Qe').click()
-            start_timer()
-            return
+          if isSlectDate:
+            isSlectDate=False
+            if i == 6:
+              datetitles[5].click()
+            else:
+              datetitles[i+1].click()
+          else:
+            isSlectDate=True
+    
+    if not isFindDateTitle:
+      datetitles[9].click()
+    else:
+      roomtitles = driver.find_elements_by_class_name('cld-obj-qz')
+      for i in range(len(roomtitles)):
+        if roomtitles[i].get_attribute('objname') == roomName:
+          if len(roomtitles[i].find_elements_by_class_name('cld-ttd')) > 2:
+            roomtitles[i].find_element_by_class_name('cld-ttd-title').click()
+            break
+
+    return True
+  except Exception as e:
+    print(str(e))
+    return False
+
+def comitBook(driver):
+  try:
+    dialogtitle = driver.find_element_by_class_name('ui-dialog-title')
+    if dialogtitle.text == '预约申请':
+      st = driver.find_elements_by_name('start_time')[2]
+      et = driver.find_elements_by_name('end_time')[2]
+      Select(st).select_by_value(startTime)
+      Select(et).select_by_value(endTime)
+      driver.find_element_by_class_name('submitarea').find_element_by_xpath(
+          "//input[@value='提交']").click()
+      return True
+    else:
+      return False
+  except Exception as e:
+    print(str(e))
+    return False
+
+def book_room(driver):
+    global isChrome, userName, passWord
+
+    if driver.title == "IC空间管理系统":
+      if not goLogin(driver):
+        print('not login')
+        if goUserCenter(driver):
+          return
         else:
-            while 0 == termsofserviceNext.size['height']:
-                try:
-                    driver.find_element_by_class_name('erm3Qe').click()
-                except Exception as e:
-                    break
-            file_name = '.\\data\\' + datetime.datetime.now().strftime('%Y%m%d') + '.txt'
-            f = open(file_name, 'a', encoding='utf-8')  # 文件路径、操作模式、编码  # r''
-            f.write(json.dumps(reginfo) + '\n')
-            f.close()
-            termsofserviceNext.click()
-            reginfo = {}
-            operationReg(driver)
-            return
+          print('not go user center')
+          if not goBookRoomSelection(driver):
+            print('not go 研究小间')
+            if not comitBook(driver):
+              print('not go commit')
+              if not changeTheDate(driver):
+                print('not go Date')
+
 
     start_timer(driver)
 
 # 注册操作
-
-
-def operationReg(driver):
-    url = "https://accounts.google.com/signup/v2/webcreateaccount?service=mail&continue=https%3A%2F%2Fmail.google.com%2Fmail&hl=zh-CN&flowName=GlifWebSignIn&flowEntry=SignUp"
+def operationBook(driver):
+    global startHour, startMin
+    url = "http://seatlib.fjtcm.edu.cn"
     driver.get(url)
+
+    while True:
+        now = datetime.datetime.now()
+        if now.hour > startHour or (now.hour == startHour and now.minute >= startMin):
+            driver.refresh()
+            break
+        # 每隔60秒检测一次
+        time.sleep(10)
     start_timer(driver)
 
 
-def start_timer(driver, time=10):
-    print(reginfo)
-    timer = threading.Timer(time, register, (driver,))
+def start_timer(driver, time=0.5):
+    timer = threading.Timer(time, book_room, (driver,))
     timer.start()
 
 
@@ -278,12 +183,9 @@ def openbrowser():
         driver = openEdge()
         isChrome = True
 
-    operationReg(driver)
+    operationBook(driver)
 
 
 # 方法主入口
 if __name__ == '__main__':
-    ret = smsLogin()
-    if ret:
-        # 加启动配置
-        openbrowser()
+    openbrowser()

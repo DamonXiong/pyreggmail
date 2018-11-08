@@ -15,8 +15,8 @@ import datetime
 from datetime import timedelta, date
 
 isChrome = True
-startHour = 20
-startMin = 47
+startHour = 23
+startMin = 58
 userName = '2160652004'
 passWord = '270749'
 roomName = '研究间17'
@@ -157,14 +157,6 @@ def operationBook(driver):
     global startHour, startMin
     url = "http://seatlib.fjtcm.edu.cn"
     driver.get(url)
-
-    while True:
-        now = datetime.datetime.now()
-        if now.hour > startHour or (now.hour == startHour and now.minute >= startMin):
-            driver.refresh()
-            break
-        # 每隔60秒检测一次
-        time.sleep(10)
     start_timer(driver)
 
 
@@ -188,4 +180,11 @@ def openbrowser():
 
 # 方法主入口
 if __name__ == '__main__':
+  
+    while True:
+        now = datetime.datetime.now()
+        if now.hour > startHour or (now.hour == startHour and now.minute >= startMin):
+            break
+        # 每隔60秒检测一次
+        time.sleep(10)
     openbrowser()

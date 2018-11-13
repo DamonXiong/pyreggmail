@@ -9,6 +9,7 @@
 
 import wx
 import wx.xrc
+from bookroom import BookRoomThread
 
 ###########################################################################
 # Class AppFrame
@@ -33,16 +34,27 @@ class AppFrame (wx.Frame):
 
         self.m_paneltop = wx.Panel(self.m_bookroom, wx.ID_ANY,
                                    wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL)
-        bSizer_top = wx.BoxSizer(wx.VERTICAL)
+        bSizer_top = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.m_staticText7 = wx.StaticText(
+            self.m_paneltop, wx.ID_ANY, u"开始预定时间", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_staticText7.Wrap(-1)
+        bSizer_top.Add(self.m_staticText7, 0, wx.ALL, 5)
+
+        self.m_textCtrlStartBook = wx.TextCtrl(
+            self.m_paneltop, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0)
+        bSizer_top.Add(self.m_textCtrlStartBook, 0, wx.ALL, 5)
 
         self.m_buttonStart = wx.Button(
             self.m_paneltop, wx.ID_ANY, u"开始预定", wx.DefaultPosition, wx.DefaultSize, 0)
         bSizer_top.Add(self.m_buttonStart, 0, wx.ALL, 5)
+        self.isStartBook = False
+        self.Bind(wx.EVT_BUTTON, self.StartBookRoom, self.m_buttonStart)
 
         self.m_paneltop.SetSizer(bSizer_top)
         self.m_paneltop.Layout()
         bSizer_top.Fit(self.m_paneltop)
-        bSizer_book.Add(self.m_paneltop, 1, wx.ALL, 5)
+        bSizer_book.Add(self.m_paneltop, 0, wx.ALL, 5)
 
         self.m_bookcfg = wx.ScrolledWindow(
             self.m_bookroom, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL | wx.VSCROLL)
@@ -175,6 +187,17 @@ class AppFrame (wx.Frame):
 
     def __del__(self):
         pass
+
+    def StartBookRoom(self, event):
+        if not self.isStartBook:
+          self.bookthread = BookRoomThread('预定房间')
+          self.bookthread.start()
+          self.m_buttonStart.SetLabelText('关闭预定')
+          self.isStartBook = True
+        else:
+          self.bookthread.stop()
+          self.m_buttonStart.SetLabelText('开始预定')
+          self.isStartBook = False
 
 
 if __name__ == "__main__":

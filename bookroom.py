@@ -18,14 +18,14 @@ from datetime import timedelta, date
 
 class BookRoomThread(threading.Thread):
 
-  startHour = 12
+  startHour = 23
   startMin = 58
   userName = '2160652004'
   passWord = '270749'
   roomName = '研究间17'
   startTime = '800'
-  endTime = '900'
-  bookDate = date.today()+timedelta(1)
+  endTime = '2200'
+  bookDate = date.today()+timedelta(2)
   isSlectDate = False
 
   def __init__(self, name):

@@ -36,8 +36,6 @@ class BookRoomThread(threading.Thread):
       self.isStart = False
 
   def stop(self):
-      if self.timer:
-        self.timer.stop()
       if self.driver:
         self.driver.close()
       self.__running.clear()        # 设置为False

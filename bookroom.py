@@ -193,6 +193,7 @@ class BookRoomThread(threading.Thread):
           if now.hour > self.startHour or (now.hour == self.startHour and now.minute >= self.startMin):
               self.driver.refresh()
               break
+          self.driver.refresh()
           # 每隔10秒检测一次
           time.sleep(10)
       self.start_timer()

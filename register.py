@@ -34,7 +34,7 @@ def smsLogin():
 
     # 登陆/获取TOKEN
     username = 'damonxiong'  # 账号
-    password = 'xxq890404'  # 密码
+    password = 'Xxq19890404'  # 密码
     url = 'http://api.fxhyd.cn/UserInterface.aspx?action=login&username=' + \
         username+'&password='+password
     TOKEN1 = request.urlopen(request.Request(
@@ -119,6 +119,17 @@ def getMsg():
         smsLogin()
         return False
 
+def dropNumber():
+    url = 'http://api.fxhyd.cn/UserInterface.aspx?action=addignore&token=' + \
+        token+'&itemid='+ITEMID+'&mobile='+phoneNumber
+
+    RELEASE = request.urlopen(request.Request(
+        url=url, headers=header_dict)).read().decode(encoding='utf-8')
+    if RELEASE == 'success':
+        print('号码成功拉黑:' + phoneNumber)
+        return True
+    print('号码拉黑失败：'+RELEASE)
+    return False
 
 def releaseNumber():
     url = 'http://api.fxhyd.cn/UserInterface.aspx?action=release&token=' + \
@@ -126,7 +137,7 @@ def releaseNumber():
 
     RELEASE = request.urlopen(request.Request(
         url=url, headers=header_dict)).read().decode(encoding='utf-8')
-    if RELEASE == 'success':
+    if RELEASE == 'success' or RELEASE == '2007' or RELEASE == '2008':
         print('号码成功释放:' + phoneNumber)
         return True
     print('号码释放失败：'+RELEASE)
@@ -187,6 +198,7 @@ def register(driver):
                 ret = releaseNumber()
                 if ret:
                     isRelese = True
+                    dropNumber()
                     # driver.quit()
                     # openbrowser()
                     # return
@@ -212,6 +224,12 @@ def register(driver):
                 "gradsIdvVerifyNext")
             gradsIdvVerifyNext.click()
     elif headingText.text == "欢迎使用 Google":
+        get163Info()
+        mails = driver.find_elements_by_css_selector('.whsOnd.zHQkBf')
+        for i in range(len(mails)):
+          if mails[i].get_attribute('aria-label') == '辅助邮箱地址（可选）':
+            mails[i].send_keys(reginfo['163mail'])
+            reginfo['163set'] = True
         year = driver.find_element_by_id('year')
         year.send_keys('1988')
         month = driver.find_element_by_id('month')
@@ -242,20 +260,44 @@ def register(driver):
                     driver.find_element_by_class_name('erm3Qe').click()
                 except Exception as e:
                     break
+
+            dropNumber()
             file_name = '.\\data\\' + datetime.datetime.now().strftime('%Y%m%d') + '.txt'
             f = open(file_name, 'a', encoding='utf-8')  # 文件路径、操作模式、编码  # r''
             f.write(json.dumps(reginfo) + '\n')
             f.close()
             termsofserviceNext.click()
+            del163Info()
             reginfo = {}
             operationReg(driver)
             return
 
     start_timer(driver)
 
+# 获取163邮箱和密码
+def get163Info():
+    global reginfo
+    fname = 'Mail163Info.txt'
+    with open(fname, 'r') as f:  # 打开文件
+      lines = f.readlines()  # 读取所有行
+      last_line = lines[-1]  # 取最后一行
+      info = last_line.strip().strip('\n').split('----')
+      print(info)
+    reginfo['163mail'] = info[0]
+    reginfo['163pwd'] = info[1]
+
+# 删除163邮箱和密码文件最后一行记录
+def del163Info():
+    fname = 'Mail163Info.txt'
+    with open(fname, 'r') as f:  # 打开文件
+      lines = f.readlines()  # 读取所有行
+      curr = lines[:-1]
+
+    file = open(fname, 'w')
+    file.writelines(curr)
+    file.close()
+
 # 注册操作
-
-
 def operationReg(driver):
     url = "https://accounts.google.com/signup/v2/webcreateaccount?service=mail&continue=https%3A%2F%2Fmail.google.com%2Fmail&hl=zh-CN&flowName=GlifWebSignIn&flowEntry=SignUp"
     driver.get(url)

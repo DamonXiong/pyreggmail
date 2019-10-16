@@ -14,12 +14,29 @@ def getHeight():
         newdata[row[1]] = row[2]
   print("getHeight step 1 complete")
   rowindex = 0
-  for row1 in df.itertuples():
+  for row1 in dfheight.itertuples():
     if np.isnan(row1[2]) and row1[1] in newdata.keys():
       dfheight.loc[rowindex, '身高'] = newdata[row1[1]]
     rowindex += 1
   dfheight.to_excel('./excel/result.xls', 'SQL Results')
   print("getHeight steps complete")
+
+
+def inputWeight():
+  dfheight = pd.read_excel('./excel/2018年.xls', 'SQL Results', usecols='B,K')
+  newdata = {}
+  for row in dfheight.itertuples():
+    if not np.isnan(row[2]):
+      if row[1] not in newdata.keys():
+        newdata[row[1]] = row[2]
+  print("inputWeight step 1 complete")
+  rowindex = 0
+  for row1 in dfheight.itertuples():
+    if np.isnan(row1[2]) and row1[1] in newdata.keys():
+      dfheight.loc[rowindex, '孕前体重'] = newdata[row1[1]]
+    rowindex += 1
+  dfheight.to_excel('./excel/2018年_weight.xls', 'SQL Results')
+  print("inputWeight steps complete")
 
 def getBMI():
   df = pd.read_excel('./excel/test.xls', 'SQL Results', usecols='B,L')
@@ -37,24 +54,6 @@ def getBMI():
     rowindex += 1
   df.to_excel('./excel/result.xls', 'SQL Results')
   print("getBMI steps complete")
-
-
-def getHeightWithBMI():
-  dfheight = pd.read_excel('./excel/test.xls', 'SQL Results', usecols='B,H,L')
-  newdata = {}
-  for row in dfheight.itertuples():
-    # print(row)
-    if not np.isnan(row[2]):
-      if row[1] not in newdata.keys():
-        newdata[row[1]] = row[2]
-  print("getHeight step 1 complete")
-  rowindex = 0
-  for row1 in df.itertuples():
-    if np.isnan(row1[2]) and row1[1] in newdata.keys():
-      dfheight.loc[rowindex, '身高'] = newdata[row1[1]]
-    rowindex += 1
-  dfheight.to_excel('./excel/result.xls', 'SQL Results')
-  print("getHeight steps complete")
 
 def removeTheSameData():
   name = '2018年_sort'
@@ -87,8 +86,20 @@ def sortByWeek():
   df.to_excel(
       './excel/' + name + '_sort.xls', 'SQL Results')
 
+
+def weightdiff():
+  name = '2018年_sort_drop'
+  df = pd.read_excel('./excel/' + name + '.xls', 'SQL Results')
+  df['体重差'] = df.groupby('身份证号码')['体重'].apply(lambda i: i.diff(1))
+  df['孕前体重差'] = df['体重'] - df['孕前体重']
+  df.to_excel(
+      './excel/' + name + '_count.xls', 'SQL Results')
+
+
 # 方法主入口
 if __name__ == '__main__':
-    removeTheSameData()
+    # inputWeight()
     # sortByWeek()
+    # removeTheSameData()
+    weightdiff()
 

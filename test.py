@@ -4,6 +4,7 @@ import string
 from urllib import parse, request
 import json
 import datetime
+import os
 
 
 def txt_wrap_by(start_str, end, html):
@@ -17,12 +18,12 @@ def txt_wrap_by(start_str, end, html):
 
 # 方法主入口
 if __name__ == '__main__':
-    mobiles = ['17160652713']
+    mobiles = ['13408418572']
 
     header_dict = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Trident/7.0; rv:11.0) like Gecko'}
     for i in mobiles:
-        url = 'http://api.fxhyd.cn/UserInterface.aspx?action=release&token=00867051741e601d25b99c10cca6e5cf6456983a&itemid=147&mobile=' + i
+        url = 'http://api.fxhyd.cn/UserInterface.aspx?action=release&token=00867051c88c08d5682fcdb6e94284f7e09834164e01&itemid=147&mobile=' + i
         RELEASE = request.urlopen(request.Request(
             url=url, headers=header_dict)).read().decode(encoding='utf-8')
         if RELEASE == 'success':
@@ -34,3 +35,13 @@ if __name__ == '__main__':
     # f = open(file_name, 'a', encoding='utf-8')  # 文件路径、操作模式、编码  # r''
     # f.write(json.dumps(reginfo) + '\n')
     # f.close()
+    # fname = 'test163.txt'
+    # with open(fname, 'r') as f:  # 打开文件
+    #   lines = f.readlines()  # 读取所有行
+    #   last_line = lines[-1]  # 取最后一行
+    #   print(last_line)
+    #   print(last_line.strip().strip('\n').split('----'))
+    #   curr = lines[:-1]
+    # file = open(fname, 'w')
+    # file.writelines(curr)
+    # file.close()

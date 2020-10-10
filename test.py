@@ -1,10 +1,6 @@
 # encoding=utf8
 
-import string
-from urllib import parse, request
-import json
-import datetime
-import os
+from urllib import request
 
 
 def txt_wrap_by(start_str, end, html):

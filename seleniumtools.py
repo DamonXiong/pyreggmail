@@ -9,14 +9,16 @@
 
 import wx
 import wx.xrc
+
 from bookroom import BookRoomThread
+
 
 ###########################################################################
 # Class AppFrame
 ###########################################################################
 
 
-class AppFrame (wx.Frame):
+class AppFrame(wx.Frame):
 
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=u"SeleniumTools", pos=wx.DefaultPosition,
@@ -125,7 +127,8 @@ class AppFrame (wx.Frame):
         bSizer_booklog = wx.BoxSizer(wx.VERTICAL)
 
         self.m_textCtrlBookLog = wx.TextCtrl(self.m_booklog, wx.ID_ANY, wx.EmptyString,
-                                             wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL | wx.TE_MULTILINE | wx.TE_RICH)
+                                             wx.DefaultPosition, wx.DefaultSize,
+                                             wx.HSCROLL | wx.TE_MULTILINE | wx.TE_RICH)
         bSizer_booklog.Add(self.m_textCtrlBookLog, 0, wx.EXPAND | wx.ALL, 5)
 
         self.m_booklog.SetSizer(bSizer_booklog)
@@ -165,7 +168,8 @@ class AppFrame (wx.Frame):
         bSizer_reglog = wx.BoxSizer(wx.VERTICAL)
 
         self.m_textCtrlRegLog = wx.TextCtrl(self.m_registerlog, wx.ID_ANY, wx.EmptyString,
-                                            wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL | wx.TE_MULTILINE | wx.TE_RICH)
+                                            wx.DefaultPosition, wx.DefaultSize,
+                                            wx.HSCROLL | wx.TE_MULTILINE | wx.TE_RICH)
         bSizer_reglog.Add(self.m_textCtrlRegLog, 0, wx.ALL, 5)
 
         self.m_registerlog.SetSizer(bSizer_reglog)
@@ -190,14 +194,14 @@ class AppFrame (wx.Frame):
 
     def StartBookRoom(self, event):
         if not self.isStartBook:
-          self.bookthread = BookRoomThread('预定房间')
-          self.bookthread.start()
-          self.m_buttonStart.SetLabelText('关闭预定')
-          self.isStartBook = True
+            self.bookthread = BookRoomThread('预定房间')
+            self.bookthread.start()
+            self.m_buttonStart.SetLabelText('关闭预定')
+            self.isStartBook = True
         else:
-          self.bookthread.stop()
-          self.m_buttonStart.SetLabelText('开始预定')
-          self.isStartBook = False
+            self.bookthread.stop()
+            self.m_buttonStart.SetLabelText('开始预定')
+            self.isStartBook = False
 
 
 if __name__ == "__main__":
